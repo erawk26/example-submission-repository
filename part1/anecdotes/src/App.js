@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 const Card = (props) =>
-  props.anecdote == null ? props.anecdote : (
+  props.anecdote == null ? (
+    ''
+  ) : (
     <div>
       <h3>{props.headline}</h3>
       <p>{props.anecdote}</p>
@@ -17,7 +19,11 @@ const App = () => {
     "Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.",
     "Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blod tests when dianosing patients",
   ];
-  const getRandom = () => Math.round(Math.random() * anecdotes.length);
+  const getRandom = () => Math.round(Math.random() * (anecdotes.length - 1));
+  const getNew = (x) => {
+    const y = getRandom();
+    return y === x ? getNew(x) : y;
+  };
   const sortVotes = (list) => {
     const keysSorted = Object.keys(list).sort(function(a, b) {
       return list[b] - list[a];
@@ -44,7 +50,7 @@ const App = () => {
         votes={votes[selected] || 0}
       />
       <div>
-        <button onClick={() => setSelected(getRandom)}>Next Anecdote</button>
+        <button onClick={() => setSelected(getNew(selected))}>Next Anecdote</button>
         <button onClick={() => setVotes({ ...submitVote(selected, votes) })}>
           Vote
         </button>
