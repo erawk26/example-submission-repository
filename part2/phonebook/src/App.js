@@ -2,29 +2,63 @@ import React, { useState, useEffect, useCallback } from "react";
 import Filter from "./Filter";
 import PersonForm from "./PersonForm";
 import Persons from "./Persons";
-import axios from "axios";
+import personService from "./services/persons";
+
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [results, setResults] = useState(persons);
   const [newStr, setNewStr] = useState("");
-  const getNewId = () => ++persons.map((p) => p.id).sort((a, b) => b - a)[0];
+
   const handleSubmit = (evt) => {
     evt.preventDefault();
     const evtName = evt.target.elements.name.value;
     if (evtName) {
-      if (
-        persons.map((p) => p.name.toLowerCase()).includes(evtName.toLowerCase())
-      ) {
-        alert(`${evtName} is already added to phonebook`);
+      const person = persons.find(
+        (p) => p.name.toLowerCase() === evtName.toLowerCase()
+      );
+      if (person) {
+        if (
+          window.confirm(
+            `${person.name} is already in the phonebook. Do you want to update the phone number?`
+          )
+        ) {
+          const evtNum = evt.target.elements.number.value;
+          const upsertedPerson = {
+            ...person,
+            name: evtName,
+            number: evtNum.length ? evtNum : person.number,
+            updated: Date.now(),
+          };
+          personService.update(person.id, upsertedPerson).then((response) => {
+            console.log({ updated: response });
+            setPersons(
+              persons.map((p) =>
+                p.name.toLowerCase() !== evtName.toLowerCase() ? p : response
+              )
+            );
+          });
+        }
       } else {
+        const newId = ++persons.map((p) => p.id).sort((a, b) => b - a)[0];
         const newPerson = {
           name: evtName,
           number: evt.target.elements.number.value,
-          id: getNewId(),
+          id: newId,
         };
-        setPersons([newPerson, ...persons]);
+        personService.create(newPerson).then((response) => {
+          console.log({ created: response });
+          setPersons(persons.concat(response));
+        });
         evt.target.reset();
       }
+    }
+  };
+  const handleRemove = (id) => {
+    if (window.confirm("Do you really want to remove?")) {
+      personService.remove(id).then((response) => {
+        console.log({ removed: response });
+        setPersons(persons.filter((p) => p.id !== id));
+      });
     }
   };
   const handleFilterUpdate = useCallback((str) => {
@@ -48,14 +82,12 @@ const App = () => {
     }
     return arr;
   }, []);
-  const axiosHook = () => {
-    console.log("effect");
-    axios.get("http://localhost:3001/persons").then((response) => {
-      console.log("promise fulfilled");
-      setPersons(response.data);
+  const onMounted = () => {
+    personService.getAll().then((response) => {
+      setPersons(response);
     });
   };
-  useEffect(axiosHook, []);
+  useEffect(onMounted, []);
   useEffect(
     () => setResults(filterResults(newStr, persons)),
     [newStr, persons, filterResults]
@@ -72,7 +104,7 @@ const App = () => {
 
       <h3>Numbers</h3>
 
-      <Persons persons={results} />
+      <Persons persons={results} handleToRemove={handleRemove} />
     </div>
   );
 };
