@@ -7,7 +7,7 @@ const App = () => {
   const [persons, setPersons] = useState([]);
   const [results, setResults] = useState(persons);
   const [newStr, setNewStr] = useState("");
-
+  const getNewId = () => ++persons.map((p) => p.id).sort((a, b) => b - a)[0];
   const handleSubmit = (evt) => {
     evt.preventDefault();
     const evtName = evt.target.elements.name.value;
@@ -20,15 +20,33 @@ const App = () => {
         const newPerson = {
           name: evtName,
           number: evt.target.elements.number.value,
+          id: getNewId(),
         };
         setPersons([newPerson, ...persons]);
         evt.target.reset();
       }
     }
   };
-  const handleFilterUpdate = useCallback((str, arr) => {
-    setResults([...arr]);
+  const handleFilterUpdate = useCallback((str) => {
     setNewStr(str);
+  }, []);
+  const filterResults = useCallback((str, arr) => {
+    if (str.length) {
+      const sNumber = str.replace(/\D/g, "");
+      const sName = str.toLowerCase();
+      const a = sNumber.length
+        ? arr.filter((p) => {
+            const pNumber = p.number.replace(/\D/g, "");
+            return pNumber.indexOf(sNumber) !== -1;
+          })
+        : [];
+      const b = arr.filter((p) => {
+        const pName = p.name.toLowerCase();
+        return pName.indexOf(sName) !== -1;
+      });
+      arr = [...a, ...b];
+    }
+    return arr;
   }, []);
   const axiosHook = () => {
     console.log("effect");
@@ -38,15 +56,15 @@ const App = () => {
     });
   };
   useEffect(axiosHook, []);
+  useEffect(
+    () => setResults(filterResults(newStr, persons)),
+    [newStr, persons, filterResults]
+  );
   return (
     <div>
       <h2>Phonebook</h2>
 
-      <Filter
-        newStr={newStr}
-        persons={persons}
-        handleToUpdate={handleFilterUpdate}
-      />
+      <Filter handleToUpdate={handleFilterUpdate} />
 
       <h3>Add a new</h3>
 
