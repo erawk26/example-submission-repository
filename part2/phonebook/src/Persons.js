@@ -4,7 +4,7 @@ const Persons = ({ persons, handleToRemove }) =>
     <div key={p.id} id={"person--" + p.id}>
       {p.name}
       {p.number ? ": " + p.number : ""}
-      <button onClick={()=>handleToRemove(p.id)}>delete</button>
+      <button onClick={()=>handleToRemove(p)}>delete</button>
     </div>
   ));
 export default Persons;

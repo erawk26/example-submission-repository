@@ -1,13 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
+import './App.css'
 import Filter from "./Filter";
 import PersonForm from "./PersonForm";
 import Persons from "./Persons";
+import StatusMessage from "./StatusMessage";
+
 import personService from "./services/persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [results, setResults] = useState(persons);
   const [newStr, setNewStr] = useState("");
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [successMsg, setSuccessMsg] = useState(null);
 
   const handleSubmit = (evt) => {
     evt.preventDefault();
@@ -29,14 +34,32 @@ const App = () => {
             number: evtNum.length ? evtNum : person.number,
             updated: Date.now(),
           };
-          personService.update(person.id, upsertedPerson).then((response) => {
-            console.log({ updated: response });
-            setPersons(
-              persons.map((p) =>
-                p.name.toLowerCase() !== evtName.toLowerCase() ? p : response
-              )
-            );
-          });
+          personService
+            .update(person.id, upsertedPerson)
+            .then((response) => {
+              console.log({ updated: response });
+              setSuccessMsg(
+                `${response.name}'s information was successfully to updated.`
+              );
+              setTimeout(() => {
+                setSuccessMsg(null);
+              }, 5000);
+              setPersons(
+                persons.map((p) =>
+                  p.name.toLowerCase() !== evtName.toLowerCase() ? p : response
+                )
+              );
+            })
+            .catch((error) => {
+              setErrorMsg(
+                `We were unable to update ${upsertedPerson.name} on the server.`
+              );
+              console.log({ error });
+              setTimeout(() => {
+                setErrorMsg(null);
+              }, 5000);
+              // setPersons(persons.filter(p => p.id !== upsertedPerson.id))
+            });
         }
       } else {
         const newId = ++persons.map((p) => p.id).sort((a, b) => b - a)[0];
@@ -45,20 +68,53 @@ const App = () => {
           number: evt.target.elements.number.value,
           id: newId,
         };
-        personService.create(newPerson).then((response) => {
-          console.log({ created: response });
-          setPersons(persons.concat(response));
-        });
+        personService
+          .create(newPerson)
+          .then((response) => {
+            console.log({ created: response });
+            setSuccessMsg(
+              `${response.name} was successfully to added to the phonebook.`
+            );
+            setTimeout(() => {
+              setSuccessMsg(null);
+            }, 5000);
+            setPersons(persons.concat(response));
+          })
+          .catch((error) => {
+            setErrorMsg(
+              `We were unable to add ${newPerson.name} to the server.`
+            );
+            console.log({ error });
+            setTimeout(() => {
+              setErrorMsg(null);
+            }, 5000);
+            setPersons(persons.filter((p) => p.id !== newPerson.id));
+          });
         evt.target.reset();
       }
     }
   };
-  const handleRemove = (id) => {
+  const handleRemove = (person) => {
     if (window.confirm("Do you really want to remove?")) {
-      personService.remove(id).then((response) => {
-        console.log({ removed: response });
-        setPersons(persons.filter((p) => p.id !== id));
-      });
+      personService
+        .remove(person.id)
+        .then((response) => {
+          console.log({ removed: response });
+          setSuccessMsg(`${person.name} was successfully deleted.`);
+          setTimeout(() => {
+            setSuccessMsg(null);
+          }, 5000);
+          setPersons(persons.filter((p) => p.id !== person.id));
+        })
+        .catch((error) => {
+          setErrorMsg(
+            `We were unable to delete ${person.name} from the server.`
+          );
+          console.log({ error });
+          setTimeout(() => {
+            setErrorMsg(null);
+          }, 5000);
+        });
     }
   };
   const handleFilterUpdate = useCallback((str) => {
@@ -83,9 +139,18 @@ const App = () => {
     return arr;
   }, []);
   const onMounted = () => {
-    personService.getAll().then((response) => {
-      setPersons(response);
-    });
+    personService
+      .getAll()
+      .then((response) => {
+        setPersons(response);
+      })
+      .catch((error) => {
+        setErrorMsg(`We were unable to fetch the records from the server.`);
+        console.log({ error });
+        setTimeout(() => {
+          setErrorMsg(null);
+        }, 5000);
+      });
   };
   useEffect(onMounted, []);
   useEffect(
@@ -98,8 +163,12 @@ const App = () => {
 
       <Filter handleToUpdate={handleFilterUpdate} />
 
-      <h3>Add a new</h3>
+      <StatusMessage
+        msg={errorMsg ? errorMsg : successMsg}
+        type={errorMsg ? "error" : "success"}
+      />
 
+      <h3>Add a new</h3>
       <PersonForm handleToSubmit={handleSubmit} />
 
       <h3>Numbers</h3>
