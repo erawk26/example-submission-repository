@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import './App.css'
+import "./App.css";
 import Filter from "./Filter";
 import PersonForm from "./PersonForm";
 import Persons from "./Persons";
@@ -18,80 +18,80 @@ const App = () => {
     evt.preventDefault();
     const evtName = evt.target.elements.name.value;
     if (evtName) {
-      const person = persons.find(
-        (p) => p.name.toLowerCase() === evtName.toLowerCase()
-      );
-      if (person) {
-        if (
-          window.confirm(
-            `${person.name} is already in the phonebook. Do you want to update the phone number?`
-          )
-        ) {
-          const evtNum = evt.target.elements.number.value;
-          const upsertedPerson = {
-            ...person,
-            name: evtName,
-            number: evtNum.length ? evtNum : person.number,
-            updated: Date.now(),
-          };
-          personService
-            .update(person.id, upsertedPerson)
-            .then((response) => {
-              console.log({ updated: response });
-              setSuccessMsg(
-                `${response.name}'s information was successfully to updated.`
-              );
-              setTimeout(() => {
-                setSuccessMsg(null);
-              }, 5000);
-              setPersons(
-                persons.map((p) =>
-                  p.name.toLowerCase() !== evtName.toLowerCase() ? p : response
-                )
-              );
-            })
-            .catch((error) => {
-              setErrorMsg(
-                `We were unable to update ${upsertedPerson.name} on the server.`
-              );
-              console.log({ error });
-              setTimeout(() => {
-                setErrorMsg(null);
-              }, 5000);
-              // setPersons(persons.filter(p => p.id !== upsertedPerson.id))
-            });
-        }
-      } else {
-        const newId = ++persons.map((p) => p.id).sort((a, b) => b - a)[0];
-        const newPerson = {
-          name: evtName,
-          number: evt.target.elements.number.value,
-          id: newId,
-        };
-        personService
-          .create(newPerson)
-          .then((response) => {
-            console.log({ created: response });
-            setSuccessMsg(
-              `${response.name} was successfully to added to the phonebook.`
-            );
-            setTimeout(() => {
-              setSuccessMsg(null);
-            }, 5000);
-            setPersons(persons.concat(response));
-          })
-          .catch((error) => {
-            setErrorMsg(
-              `We were unable to add ${newPerson.name} to the server.`
-            );
-            console.log({ error });
-            setTimeout(() => {
-              setErrorMsg(null);
-            }, 5000);
-            setPersons(persons.filter((p) => p.id !== newPerson.id));
-          });
-        evt.target.reset();
-      }
+      //   const person = persons.find(
+      //     (p) => p.name.toLowerCase() === evtName.toLowerCase()
+      //   );
+      /////
+      //   if (person) {
+      //     if (
+      //       window.confirm(
+      //         `${person.name} is already in the phonebook. Do you want to update the phone number?`
+      //       )
+      //     ) {
+      //       const evtNum = evt.target.elements.number.value;
+      //       const upsertedPerson = {
+      //         ...person,
+      //         name: evtName,
+      //         number: evtNum.length ? evtNum : person.number,
+      //         updated: Date.now(),
+      //       };
+      //       personService
+      //         .update(person.id, upsertedPerson)
+      //         .then((response) => {
+      //           console.log({ updated: response });
+      //           setSuccessMsg(
+      //             `${response.name}'s information was successfully to updated.`
+      //           );
+      //           setTimeout(() => {
+      //             setSuccessMsg(null);
+      //           }, 5000);
+      //           setPersons(
+      //             persons.map((p) =>
+      //               p.name.toLowerCase() !== evtName.toLowerCase() ? p : response
+      //             )
+      //           );
+      //         })
+      //         .catch((error) => {
+      //           setErrorMsg(
+      //             `We were unable to update ${upsertedPerson.name} on the server.`
+      //           );
+      //           console.log({ error });
+      //           setTimeout(() => {
+      //             setErrorMsg(null);
+      //           }, 5000);
+      //           // setPersons(persons.filter(p => p.id !== upsertedPerson.id))
+      //         });
+      //     }
+      //   } else {
+      // const newId = ++persons.map((p) => p.id).sort((a, b) => b - a)[0];
+      const newPerson = {
+        name: evtName,
+        number: evt.target.elements.number.value,
+      };
+      personService
+        .create(newPerson)
+        .then((response) => {
+          console.log({ created: response });
+          evt.target.reset();
+          setSuccessMsg(
+            `${response.name} was successfully to added to the phonebook.`
+          );
+          setTimeout(() => {
+            setSuccessMsg(null);
+          }, 5000);
+          setPersons(persons.concat(response));
+        })
+        .catch((error) => {
+          setErrorMsg(
+            `We were unable to add ${newPerson.name} to the server. ${error.response.data.error}.`
+          );
+          console.log({ error: error.response.data.error });
+          setTimeout(() => {
+            setErrorMsg(null);
+          }, 5000);
+          setPersons(persons.filter((p) => p.id !== newPerson.id));
+        });
+      //   }
     }
   };
   const handleRemove = (person) => {
@@ -108,9 +108,9 @@ const App = () => {
         })
         .catch((error) => {
           setErrorMsg(
-            `We were unable to delete ${person.name} from the server.`
+            `We were unable to delete ${person.name} from the server. ${error.response.data.error}.`
           );
-          console.log({ error });
+          console.log({ error: error.response.data.error });
           setTimeout(() => {
             setErrorMsg(null);
           }, 5000);
@@ -145,7 +145,9 @@ const App = () => {
         setPersons(response);
       })
       .catch((error) => {
-        setErrorMsg(`We were unable to fetch the records from the server.`);
+        setErrorMsg(
+          `We were unable to fetch the records from the server. ${error.response.data.error}`
+        );
         console.log({ error });
         setTimeout(() => {
           setErrorMsg(null);
