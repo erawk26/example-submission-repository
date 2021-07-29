@@ -128,7 +128,7 @@ app.delete("/api/persons/:id", (request, response) => {
   const person = persons.find((p) => p.id === id);
   if (person) {
     persons = persons.filter((p) => p.id !== id);
-    response.json(person).status(204).end;
+    response.status(204).json(person);
   } else {
     response.status(404).end;
   }
@@ -143,7 +143,7 @@ app.get("/api/persons/:id", (request, response) => {
   }
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
