@@ -1,10 +1,20 @@
 const express = require("express");
 const cors = require("cors");
+const morgan = require("morgan");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+const originalSend = app.response.send;
 
+app.response.send = function sendOverWrite(body) {
+  originalSend.call(this, body);
+  this.__custombody__ = body;
+};
+
+morgan.token("res-body", (_req, res) => res.__custombody__);
+
+app.use(morgan(":method :url :status :response-time ms - :res-body"));
 let persons = [
   {
     name: "Arto Hellas",
@@ -55,7 +65,6 @@ const getNewId = () => {
   return persons.map((p) => p.id).includes(id) ? newId() : id;
 };
 app.get("/", (request, response) => {
-  console.log({ response });
   response.send("<h1>Hello World!</h1>");
 });
 app.get("/info", (request, response) => {

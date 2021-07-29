@@ -13,6 +13,7 @@ const App = () => {
   const [newStr, setNewStr] = useState("");
   const [errorMsg, setErrorMsg] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [telephoneInputVal, setTelephoneInputVal] = useState('');
 
   const handleSubmit = (evt) => {
     evt.preventDefault();
@@ -71,8 +72,9 @@ const App = () => {
       personService
         .create(newPerson)
         .then((response) => {
+            evt.target.reset();
+            setTelephoneInputVal('');
           console.log({ created: response });
-          evt.target.reset();
           setSuccessMsg(
             `${response.name} was successfully to added to the phonebook.`
           );
@@ -120,6 +122,9 @@ const App = () => {
   const handleFilterUpdate = useCallback((str) => {
     setNewStr(str);
   }, []);
+  const handleInputUpdate = useCallback((str) => {
+    setTelephoneInputVal(str);
+  }, []);
   const filterResults = useCallback((str, arr) => {
     if (str.length) {
       const sNumber = str.replace(/\D/g, "");
@@ -146,7 +151,9 @@ const App = () => {
       })
       .catch((error) => {
         setErrorMsg(
-          `We were unable to fetch the records from the server. ${error.response.data.error}`
+          `We were unable to fetch the records from the server. ${
+            error.response ? error.response.data.error : ""
+          }`
         );
         console.log({ error });
         setTimeout(() => {
@@ -171,7 +178,7 @@ const App = () => {
       />
 
       <h3>Add a new</h3>
-      <PersonForm handleToSubmit={handleSubmit} />
+      <PersonForm telephoneValue={telephoneInputVal} handleToUpdate={handleInputUpdate} handleToSubmit={handleSubmit} />
 
       <h3>Numbers</h3>
 

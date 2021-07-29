@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 const StatusMessage = ({ msg, type = "error" }) => {
   if (!msg) {
     return null;
