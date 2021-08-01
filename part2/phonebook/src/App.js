@@ -84,7 +84,7 @@ const App = () => {
           })
           .catch((error) => {
             setErrorMsg(
-              `We were unable to add ${newPerson.name} to the server. ${error.response.data.error}.`
+              `We were unable to add ${newPerson.name} to the server. ${error.response.data.error}`
             );
             console.log({ error: error.response.data.error });
             setTimeout(() => {
@@ -99,8 +99,8 @@ const App = () => {
     if (window.confirm("Do you really want to remove?")) {
       personService
         .remove(person.id)
-        .then((response, b, c) => {
-          console.log({ removed: person, response, b, c });
+        .then(() => {
+          console.log({ removed: person });
           setSuccessMsg(`${person.name} was successfully deleted.`);
           setTimeout(() => {
             setSuccessMsg(null);
@@ -109,7 +109,7 @@ const App = () => {
         })
         .catch((error) => {
           setErrorMsg(
-            `We were unable to delete ${person.name} from the server. ${error.response.data.error}.`
+            `We were unable to delete ${person.name} from the server. ${error.response.data.error}`
           );
           console.log({ error: error.response.data.error });
           setTimeout(() => {
@@ -150,9 +150,7 @@ const App = () => {
       })
       .catch((error) => {
         setErrorMsg(
-          `We were unable to fetch the records from the server. ${
-            error.response ? error.response.data.error : ""
-          }`
+          `We were unable to fetch the records from the server. ${error.response.data.error}`
         );
         console.log({ error });
         setTimeout(() => {
