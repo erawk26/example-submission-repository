@@ -7,9 +7,19 @@
 // complicates things a little sometimes.
 
 module.exports = {
-  extends: ["./.eslintrc.base.js"],
+  env: {
+    commonjs: true,
+    es2021: true,
+    node: true,
+  },
+  extends: "eslint:recommended",
   rules: {
     "prettier/prettier": "off",
+    // ...
+    "eqeqeq": "error",
+    "no-trailing-spaces": "error",
+    "object-curly-spacing": ["error", "always"],
+    "arrow-spacing": ["error", { before: true, after: true }],
   },
   overrides: [
     {
