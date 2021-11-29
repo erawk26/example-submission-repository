@@ -10,8 +10,12 @@ const blogSchema = new mongoose.Schema({
 blogSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
-    returnedObject.created = returnedObject.created.getTime();
-    returnedObject.modified = returnedObject.modified.getTime();
+    returnedObject.created = 'created' in returnedObject
+      ? returnedObject.created.getTime()
+      : null;
+    returnedObject.modified = 'modified' in returnedObject
+      ? returnedObject.modified.getTime()
+      : null;
     delete returnedObject._id;
     delete returnedObject.__v;
   },
